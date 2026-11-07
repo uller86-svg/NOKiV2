@@ -55,6 +55,9 @@ input[type=text],select{width:100%;padding:13px;font-size:17px;border:1px solid 
 .need small{width:100%;color:var(--mu);font-weight:400;font-size:14px}
 .empty{color:var(--mu);text-align:center;padding:40px 10px}
 .msg{font-size:13px;color:var(--mu);text-align:center;margin:8px 0;min-height:18px}
+.rw[data-ids]{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.rw.bk{position:relative;overflow:hidden;background:rgba(21,128,61,.14)}
+.rw.bk::after{content:"ZAKSIĘGOWANY";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:24px;letter-spacing:2px;color:var(--ok);opacity:.4;transform:rotate(-8deg);pointer-events:none}
 input:disabled,.sw button:disabled{opacity:.45}
 </style>
 </head>
@@ -85,7 +88,7 @@ input:disabled,.sw button:disabled{opacity:.45}
  <div class="msg" id="msg"></div>
  <div class="h sec" id="lh"></div>
  <div class="card" id="list" style="display:none"></div>
- <div class="h" style="text-align:center">← przesuń w lewo: raport dzienny i karty zleceń</div>
+ <div class="h" style="text-align:center">← przesuń w lewo: karty zleceń i raport dzienny</div>
  <div class="h" id="info" style="text-align:center"></div>
  <button class="rst" id="rst">Reset danych</button>
 </div>
@@ -97,7 +100,7 @@ input:disabled,.sw button:disabled{opacity:.45}
 const ELS=["Przód","Środek","Tył","RICO"];
 const RS=["H01 – CAD – nieprawidłowy program","H02 – Operator – nieprawidłowy program","H03 – Operator – uszkodzenie po wycięciu","H04 – Operator – zły kolor/grubość płyty","H05 – Produkcja – złe frezowania","H06 – R&D – błędy w produkcie","H07 – Produkcja – uszkodzenie na produkcji","H08 – Uszkodzenie przez mostki","M01 – Złe frezowania – błędna praca maszyny","M02 – Awaria maszyny","M03 – Awaria prądu","M04 – Porysowanie podczas cięcia","P01 – Uszkodzona płyta – wina producenta","P02 – Zakrzywiona płyta – wina producenta","P03 – Zły odcień płyty – wina producenta","P04 – Fala – wina producenta","P05 – Kropki – wina producenta","T01 – Złamany nóż/frez","T02 – Problemy IT","Z01 – Inne"];
 const isZ=v=>v.startsWith("Z01");
-const SZS=["2500x1250","3740x1560","3100x1880","2000x1535"];
+const SZS=["2500x1250","3740x1560","3100x1880","2200x1535"];
 const $=id=>document.getElementById(id);
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const dd=s=>s.slice(8)+"."+s.slice(5,7)+"."+s.slice(0,4);
@@ -175,28 +178,30 @@ $("rst").onclick=()=>{
 
 /* ---------- grupowanie i raporty ---------- */
 const cmpn=(a,b)=>a.localeCompare(b,"pl",{numeric:true});
-function groups(list){
+function groups(list,byBook){
  const g={};
  list.forEach(e=>{
   const k=e.ord+"\u0001"+e.pos;const o=g[k]=g[k]||{ord:e.ord,pos:e.pos,rows:{}};
-  const rk=[e.el,e.rs,e.cut?1:0,e.src,(e.sz||"").toLowerCase().replace(/[\s×*]/g,"").replace(/,/g,".")].join("\u0001");
-  const r=o.rows[rk]=o.rows[rk]||{el:e.el,rs:e.rs,cut:e.cut,src:e.src,sz:e.sz||"",pn:0,qty:0};
-  r.qty+=e.qty;r.pn=Math.round((r.pn+(e.pn||0))*100)/100;
+  const rk=[e.el,e.rs,e.cut?1:0,e.src,(e.sz||"").toLowerCase().replace(/[\s×*]/g,"").replace(/,/g,"."),e.b?1:0].join("\u0001");
+  const r=o.rows[rk]=o.rows[rk]||{el:e.el,rs:e.rs,cut:e.cut,src:e.src,sz:e.sz||"",pn:0,qty:0,b:e.b?1:0,ids:[]};
+  r.qty+=e.qty;r.ids.push(e.id);r.pn=Math.round((r.pn+(e.pn||0))*100)/100;
  });
  return Object.values(g).sort((a,b)=>cmpn(a.ord,b.ord)||cmpn(a.pos,b.pos)).map(x=>({
   ord:x.ord,pos:x.pos,
-  rows:Object.values(x.rows).sort((a,b)=>ELS.indexOf(a.el)-ELS.indexOf(b.el)||a.rs.localeCompare(b.rs,"pl")||a.cut-b.cut)
+  rows:Object.values(x.rows).sort((a,b)=>ELS.indexOf(a.el)-ELS.indexOf(b.el)||a.rs.localeCompare(b.rs,"pl")||a.cut-b.cut||a.b-b.b)
  }));
 }
 function need(g){
- const m={};g.rows.forEach(r=>{if(!r.cut)m[r.el]=(m[r.el]||0)+r.qty});
+ const m={};g.rows.forEach(r=>{if(!r.cut&&!r.b)m[r.el]=(m[r.el]||0)+r.qty});
  const t=Object.values(m).reduce((a,b)=>a+b,0);
  const d=ELS.filter(k=>m[k]).map(k=>k+" "+m[k]).join(" · ");
  return `<div class="need${t?"":" done"}"><span>Do docinki</span><b>${t} szt.</b>${d?`<small>${esc(d)}</small>`:""}</div>`;
 }
 const heading=g=>g.pos?`Zamówienie ${esc(g.ord)} · poz. ${esc(g.pos)}`:`Zamówienie ${esc(g.ord)} · RICO`;
-const rowsHtml=g=>g.rows.map((r,i)=>`<div class="rw${i&&g.rows[i-1].el!==r.el?" sep":""}"><div><b>${esc(r.el)}</b><small>${esc(r.rs)}</small>${r.cut?`<small class="cut">Docinka wykonana: ${esc(r.src)}${r.sz?" "+esc(r.sz):""}${r.pn?" · paneli: "+fmt(r.pn):""}</small>`:""}</div><div class="q">${r.qty} szt.</div></div>`).join("");
-const grpHtml=(g,t)=>`<div class="card grp">${t?`<h3>${t}</h3>`:""}${rowsHtml(g)}${need(g)}</div>`;
+const rowsHtml=(g,bk)=>g.rows.map((r,i)=>`<div class="rw${i&&g.rows[i-1].el!==r.el?" sep":""}${r.b?" bk":""}"${bk?` data-ids="${r.ids.join(",")}"`:""}><div><b>${esc(r.el)}</b><small>${esc(r.rs)}</small>${r.cut?`<small class="cut">Docinka wykonana: ${esc(r.src)}${r.sz?" "+esc(r.sz):""}${r.pn?" · paneli: "+fmt(r.pn):""}</small>`:""}</div><div class="q">${r.qty} szt.</div></div>`).join("");
+const grpHtml=(g,t,bk)=>`<div class="card grp">${t?`<h3>${t}</h3>`:""}${rowsHtml(g,bk)}${need(g)}</div>`;
+const delBtn=l=>`<button class="rst" id="del" data-t="Usuń kartę ${esc(l)}">Usuń kartę ${esc(l)}</button>`;
+const cardKey=e=>e.pos?e.ord+"/"+e.pos:"RICO";
 const exportBtn='<button class="add" id="exp" style="margin-top:6px">Eksportuj (CSV + wykres)</button><div class="msg" id="msg2"></div>';
 let curExport=null;
 
@@ -213,15 +218,15 @@ function renderPage(k){
    +(gs.length?gs.map(g=>grpHtml(g,heading(g))).join(""):'<div class="empty">Brak wpisów z dzisiaj</div>')+(gs.length?exportBtn:"");
  }
  const c=cards().find(x=>x.key===k);if(!c)return "";
- const gs=groups(c.list),tot=c.list.reduce((s,e)=>s+e.qty,0);
+ const gs=groups(c.list,c.rico),tot=c.list.reduce((s,e)=>s+e.qty,0);
  curExport={list:c.list,label:c.label,base:"karta_"+c.label.replace(/\//g,"_")};
- return `<div class="date">${esc(c.label)}${c.rico?" (bez pozycji)":""}</div><div class="h">Wpisów: ${c.list.length} · razem ${tot} szt.</div>`
-  +gs.map(g=>grpHtml(g,c.rico?`Zamówienie ${esc(g.ord)}`:"")).join("")+exportBtn;
+ return `<div class="date">${esc(c.label)}${c.rico?" (bez pozycji)":""}</div><div class="h">Wpisów: ${c.list.length} · razem ${tot} szt.</div><div class="h">Dotknij dwukrotnie wiersz, aby oznaczyć go jako ZAKSIĘGOWANY – wtedy nie wymaga docinki (ponownie – cofnięcie).</div>`
+  +gs.map(g=>grpHtml(g,c.rico?`Zamówienie ${esc(g.ord)}`:"",true)).join("")+exportBtn+delBtn(c.label);
 }
 
 /* ---------- nawigacja: zakładki + przesuwanie ---------- */
 let cur="wpis";
-const pages=()=>[{k:"wpis",t:"Wpis"},{k:"raport",t:"Raport"}].concat(cards().map(c=>({k:c.key,t:c.label})));
+const pages=()=>[{k:"wpis",t:"Wpis"}].concat(cards().map(c=>({k:c.key,t:c.label})),[{k:"raport",t:"Raport"}]);
 function buildTabs(ps){
  ps=ps||pages();const t=$("tabs");t.innerHTML="";
  ps.forEach(p=>{const b=document.createElement("button");b.textContent=p.t;b.className=p.k===cur?"on":"";b.onclick=()=>{const i=ps.findIndex(x=>x.k===cur),j=ps.findIndex(x=>x.k===p.k);go(p.k,j>i?1:-1)};t.appendChild(b);
@@ -235,6 +240,8 @@ function go(k,dir){
  else{
   $("p0").style.display="none";v.style.display="block";v.innerHTML=renderPage(k);v.scrollTop=0;
   const x=$("exp");if(x)x.onclick=doExport;
+  const dl=$("del");if(dl)dl.onclick=delCard;
+  v.querySelectorAll(".rw[data-ids]").forEach(r=>r.onclick=bookTap);
   v.classList.remove("al","ar");void v.offsetWidth;if(dir)v.classList.add(dir>0?"ar":"al");
  }
 }
@@ -251,10 +258,10 @@ $("vp").addEventListener("touchend",e=>{
 /* ---------- eksport: CSV + wykres PNG ---------- */
 function toCsv(list,label){
  const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
- const L=[["Karta","Data eksportu","Nr zamówienia","Nr pozycji","Element","Kod","Przyczyna","Ilość","Docinka","Docinka z","Rozmiar panela","Ilość paneli"]];
- groups(list).forEach(g=>g.rows.forEach(r=>L.push([label,today(),g.ord,g.pos,r.el,r.rs.slice(0,3),r.rs.slice(6),r.qty,r.cut?"TAK":"NIE",r.src,r.sz,r.pn?fmt(r.pn):""])));
+ const L=[["Karta","Data eksportu","Nr zamówienia","Nr pozycji","Element","Kod","Przyczyna","Ilość","Docinka","Docinka z","Rozmiar panela","Ilość paneli","Zaksięgowany"]];
+ groups(list,label==="RICO").forEach(g=>g.rows.forEach(r=>L.push([label,today(),g.ord,g.pos,r.el,r.rs.slice(0,3),r.rs.slice(6),r.qty,r.cut?"TAK":"NIE",r.src,r.sz,r.pn?fmt(r.pn):"",r.b?"TAK":""])));
  L.push([]);L.push(["Do docinki – podsumowanie"]);
- ELS.forEach(el=>{const n=list.filter(e=>e.el===el&&!e.cut).reduce((s,e)=>s+e.qty,0);if(n)L.push(["","","","",el,"","",n])});
+ ELS.forEach(el=>{const n=list.filter(e=>e.el===el&&!e.cut&&!e.b).reduce((s,e)=>s+e.qty,0);if(n)L.push(["","","","",el,"","",n])});
  return L.map(l=>l.map(q).join(";")).join("\r\n");
 }
 function chartPng(list,label){
@@ -295,6 +302,20 @@ async function doExport(){
   }
   flash("msg2","Zapisano ✓");
  }catch(e){if(!e||e.code!=="declined")flash("msg2","Nie udało się zapisać pliku")}
+}
+let lt=0,lr=null;
+function bookTap(ev){const r=ev.currentTarget,n=Date.now();if(lr===r&&n-lt<400){lr=null;toggleBook(r.dataset.ids.split(","))}else{lr=r;lt=n}}
+function toggleBook(ids){
+ const L=entries.filter(e=>ids.includes(String(e.id))),all=L.every(e=>e.b);
+ L.forEach(e=>{e.b=!all});save();
+ const v=$("view"),y=v.scrollTop;go(cur);v.scrollTop=y;
+}
+let dtk=null,dtm=null;
+function delCard(){
+ const b=$("del");
+ if(dtk!==cur){dtk=cur;b.textContent="Na pewno? Kliknij ponownie, aby usunąć";clearTimeout(dtm);dtm=setTimeout(()=>{dtk=null;const x=$("del");if(x)x.textContent=x.dataset.t},5000);return}
+ clearTimeout(dtm);const k=cur;dtk=null;
+ entries=entries.filter(e=>cardKey(e)!==k);save();renderList();go("wpis");flash("msg","Karta usunięta");
 }
 renderList();buildTabs();
 </script>
