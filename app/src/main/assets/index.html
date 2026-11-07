@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Niezgodności</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1b1f24;--mu:#6b7280;--ac:#c2410c;--acx:#fff;--bd:#d9dce1;--ok:#15803d;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--card:#1f2228;--tx:#eceef1;--mu:#9aa1ac;--ac:#fb923c;--acx:#1b1f24;--bd:#363b44;--ok:#4ade80}}
+:root[data-theme="dark"]{--bg:#14161a;--card:#1f2228;--tx:#eceef1;--mu:#9aa1ac;--ac:#fb923c;--acx:#1b1f24;--bd:#363b44;--ok:#4ade80}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:16px system-ui,sans-serif}
+body{display:flex;flex-direction:column;overflow:hidden}
+.tabs{display:flex;overflow-x:auto;background:var(--card);border-bottom:1px solid var(--bd);scrollbar-width:none;flex:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:none;padding:14px 16px;border:0;background:none;color:var(--mu);font-size:16px;font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ac);border-color:var(--ac)}
+.vp{flex:1;overflow:hidden;position:relative;min-height:0}
+.pg{width:100%;height:100%;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch}
+@keyframes fr{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fl{from{transform:translateX(-40px);opacity:0}to{transform:none;opacity:1}}
+.ar{animation:fr .22s}.al{animation:fl .22s}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+label.l{display:block;font-size:13px;color:var(--mu);margin:0 0 6px;font-weight:600}
+input[type=text],select{width:100%;padding:13px;font-size:17px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+.row{display:flex;gap:10px}.row>div{flex:1}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{flex:1;min-width:76px;padding:13px 8px;font-size:16px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+.chips button.on{background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:700}
+.stp{display:flex;align-items:center;gap:10px}
+.stp button{width:52px;height:52px;font-size:26px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+.stp b{flex:1;text-align:center;font-size:26px}
+.sw{display:flex;justify-content:space-between;align-items:center;font-weight:600}
+.sw button{width:56px;height:32px;border-radius:16px;border:0;background:var(--bd);position:relative}
+.sw button::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:.2s}
+.sw button.on{background:var(--ok)}.sw button.on::after{left:27px}
+.add{width:100%;padding:16px;font-size:18px;font-weight:700;border:0;border-radius:12px;background:var(--ac);color:var(--acx)}
+.rst{width:100%;padding:13px;font-size:15px;font-weight:600;border:1px solid #dc2626;border-radius:12px;background:none;color:#dc2626;margin-top:6px}
+.sec{margin-top:12px}
+.item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 0;border-top:1px solid var(--bd);font-size:14px}
+.item:first-child{border-top:0}
+.item button{border:0;background:none;color:var(--mu);font-size:20px;padding:6px 10px}
+.h{font-size:13px;color:var(--mu);margin:4px 2px 10px}
+.date{font-size:22px;font-weight:700;margin:2px 2px 4px}
+.grp h3{margin:0 0 8px;font-size:17px}
+.rw{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--bd)}
+.rw:first-of-type{border-top:0}
+.rw.sep{border-top:4px solid #dc2626;margin-top:8px;padding-top:12px}
+.rw small{display:block;color:var(--mu)}
+.q{font-weight:700;font-size:18px;white-space:nowrap}
+.cut{color:var(--ok)!important}
+.need{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 10px;margin-top:10px;padding-top:10px;border-top:2px solid var(--tx);font-weight:700}
+.need b{font-size:18px;color:var(--ac)}.need.done b{color:var(--ok)}
+.need small{width:100%;color:var(--mu);font-weight:400;font-size:14px}
+.empty{color:var(--mu);text-align:center;padding:40px 10px}
+.msg{font-size:13px;color:var(--mu);text-align:center;margin:8px 0;min-height:18px}
+input:disabled,.sw button:disabled{opacity:.45}
+</style>
+</head>
+<body>
+<div class="tabs" id="tabs"></div>
+<div class="vp" id="vp">
+
+<div class="pg" id="p0">
+ <div class="card">
+  <div class="row">
+   <div><label class="l">Nr zamówienia</label><input type="text" id="ord" inputmode="numeric" placeholder="416-319" autocomplete="off"></div>
+   <div><label class="l">Nr pozycji</label><input type="text" id="pos" inputmode="numeric" autocomplete="off"></div>
+  </div>
+  <div class="sec"><label class="l">Element</label><div class="chips" id="el"></div></div>
+  <div class="sec"><label class="l">Ilość szt.</label><div class="stp"><button id="mn">−</button><b id="qty">1</b><button id="pl">+</button></div></div>
+  <div class="sec"><label class="l">Przyczyna niezgodności</label><select id="rs"></select>
+   <input type="text" id="rsx" placeholder="Opis (opcjonalnie)" style="display:none;margin-top:8px"></div>
+  <div class="sec sw"><span>Docinka wykonana</span><button id="ct"></button></div>
+  <div id="cb" style="display:none">
+   <div class="sec"><label class="l">Docinka z</label><div class="chips" id="src"></div></div>
+   <div class="sec" id="szw" style="display:none"><label class="l">Rozmiar panela</label>
+    <div class="chips" id="szc" style="display:none"></div>
+    <input type="text" id="sz" placeholder="np. 2800x600" style="margin-top:8px"></div>
+   <div class="sec" id="pnw" style="display:none"><label class="l">Ilość paneli (można 0,5)</label><input type="text" id="pn" inputmode="decimal" placeholder="np. 1 lub 0,5"></div>
+  </div>
+ </div>
+ <button class="add" id="add">Dodaj wpis</button>
+ <div class="msg" id="msg"></div>
+ <div class="h sec" id="lh"></div>
+ <div class="card" id="list" style="display:none"></div>
+ <div class="h" style="text-align:center">← przesuń w lewo: raport dzienny i karty zleceń</div>
+ <div class="h" id="info" style="text-align:center"></div>
+ <button class="rst" id="rst">Reset danych</button>
+</div>
+
+<div class="pg" id="view" style="display:none"></div>
+
+</div>
+<script>
+const ELS=["Przód","Środek","Tył","RICO"];
+const RS=["H01 – CAD – nieprawidłowy program","H02 – Operator – nieprawidłowy program","H03 – Operator – uszkodzenie po wycięciu","H04 – Operator – zły kolor/grubość płyty","H05 – Produkcja – złe frezowania","H06 – R&D – błędy w produkcie","H07 – Produkcja – uszkodzenie na produkcji","H08 – Uszkodzenie przez mostki","M01 – Złe frezowania – błędna praca maszyny","M02 – Awaria maszyny","M03 – Awaria prądu","M04 – Porysowanie podczas cięcia","P01 – Uszkodzona płyta – wina producenta","P02 – Zakrzywiona płyta – wina producenta","P03 – Zły odcień płyty – wina producenta","P04 – Fala – wina producenta","P05 – Kropki – wina producenta","T01 – Złamany nóż/frez","T02 – Problemy IT","Z01 – Inne"];
+const isZ=v=>v.startsWith("Z01");
+const SZS=["2500x1250","3740x1560","3100x1880","2000x1535"];
+const $=id=>document.getElementById(id);
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const dd=s=>s.slice(8)+"."+s.slice(5,7)+"."+s.slice(0,4);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=n=>String(Math.round(n*100)/100).replace(".",",");
+const num=s=>parseFloat(String(s).replace(",","."));
+const KEY="niezg:v2";
+let entries=[];
+try{entries=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){entries=[]}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(entries))}catch(e){}};
+function flash(id,t){const x=$(id);if(!x)return;x.textContent=t;setTimeout(()=>{if(x.textContent===t)x.textContent=""},2500)}
+
+/* ---------- formularz ---------- */
+const st={el:"",qty:1,cut:false,src:"Odpad",szs:"",was:false};
+function chips(id,opts,get,set,off){
+ const c=$(id);c.innerHTML="";
+ opts.forEach(o=>{const b=document.createElement("button");b.textContent=o;b.className=get()===o?"on":"";
+  b.onclick=()=>{set(off&&get()===o?"":o);chips(id,opts,get,set,off)};c.appendChild(b)});
+}
+function applyRico(){
+ const r=st.el==="RICO";
+ $("pos").disabled=r;$("pos").placeholder=r?"nie dotyczy":"";
+ if(r){st.cut=true;st.was=true}else if(st.was){st.cut=false;st.was=false}
+ const nowy=st.cut&&st.src==="Nowy panel";
+ $("ct").className=st.cut?"on":"";$("ct").disabled=r;
+ $("cb").style.display=st.cut?"block":"none";
+ $("szw").style.display=nowy?"block":"none";
+ $("szc").style.display=r?"flex":"none";
+ $("sz").style.display=(!r||st.szs==="Inny")?"block":"none";
+ $("pnw").style.display=(r&&nowy)?"block":"none";
+}
+const drawEl=()=>chips("el",ELS,()=>st.el,v=>{st.el=v;applyRico()},true);
+chips("src",["Odpad","Nowy panel"],()=>st.src,v=>{st.src=v||"Odpad";applyRico()},false);
+chips("szc",SZS.concat(["Inny"]),()=>st.szs,v=>{st.szs=v;applyRico()},true);
+drawEl();applyRico();
+$("rs").innerHTML='<option value="">— wybierz przyczynę —</option>'+RS.map(r=>`<option>${esc(r)}</option>`).join("");
+$("rs").onchange=()=>{$("rsx").style.display=isZ($("rs").value)?"block":"none"};
+$("mn").onclick=()=>{st.qty=Math.max(1,st.qty-1);$("qty").textContent=st.qty};
+$("pl").onclick=()=>{st.qty++;$("qty").textContent=st.qty};
+$("ct").onclick=()=>{if(st.el==="RICO")return;st.cut=!st.cut;applyRico()};
+$("ord").oninput=()=>{const d=$("ord").value.replace(/\D/g,"").slice(0,6);$("ord").value=d.length>3?d.slice(0,3)+"-"+d.slice(3):d};
+
+$("add").onclick=()=>{
+ const ord=$("ord").value.trim(),r=st.el==="RICO",pos=r?"":$("pos").value.trim();
+ let rs=$("rs").value;if(rs&&isZ(rs)&&$("rsx").value.trim())rs+=": "+$("rsx").value.trim();
+ if(!/^\d{3}-\d{3}$/.test(ord))return flash("msg","Nr zamówienia: 6 cyfr, np. 416-319");
+ if(!r&&!pos)return flash("msg","Podaj nr pozycji");
+ if(!st.el)return flash("msg","Wybierz element (przód / środek / tył / RICO)");
+ if(!rs)return flash("msg","Wybierz przyczynę niezgodności");
+ const nowy=st.cut&&st.src==="Nowy panel";let sz="",pn=0;
+ if(nowy){
+  sz=(r&&st.szs&&st.szs!=="Inny")?st.szs:$("sz").value.trim();
+  if(!sz)return flash("msg","Podaj rozmiar panela");
+  if(r){pn=num($("pn").value);if(!(pn>0))return flash("msg","Podaj ilość paneli (np. 1 lub 0,5)")}
+ }
+ entries.push({id:Date.now(),d:today(),ord,pos,el:st.el,qty:st.qty,rs,cut:st.cut,src:st.cut?st.src:"",sz,pn});
+ save();
+ st.qty=1;$("qty").textContent=1;st.el="";$("pn").value="";$("sz").value="";applyRico();drawEl();
+ flash("msg","Dodano ✓");renderList();buildTabs();
+};
+function renderList(){
+ const l=$("list"),last=entries.slice(-15).reverse();
+ $("lh").textContent=entries.length?"Ostatnie wpisy (łącznie "+entries.length+")":"";
+ l.style.display=entries.length?"block":"none";
+ l.innerHTML=last.map(e=>`<div class="item"><span><b>${esc(e.ord)}${e.pos?"/"+esc(e.pos):""}</b> · ${esc(e.el)} · ${e.qty} szt.<br><span style="color:var(--mu)">${esc(e.rs)}${e.cut?" · docinka: "+esc(e.src)+(e.sz?" "+esc(e.sz):"")+(e.pn?" · paneli: "+fmt(e.pn):""):""}</span></span><button data-id="${e.id}" aria-label="Usuń">✕</button></div>`).join("");
+ l.querySelectorAll("button").forEach(b=>b.onclick=()=>{entries=entries.filter(e=>e.id!=b.dataset.id);save();renderList();buildTabs()});
+ $("info").textContent=entries.length?"Dane zapisane od "+dd(entries.reduce((m,e)=>e.d<m?e.d:m,entries[0].d))+" · wpisów: "+entries.length:"Brak zapisanych danych";
+}
+let rt=null;
+$("rst").onclick=()=>{
+ if(!rt){$("rst").textContent="Na pewno? Kliknij ponownie, aby usunąć WSZYSTKIE dane";rt=setTimeout(()=>{rt=null;$("rst").textContent="Reset danych"},5000);return}
+ clearTimeout(rt);rt=null;entries=[];save();$("rst").textContent="Reset danych";
+ renderList();buildTabs();flash("msg","Dane zresetowane");
+};
+
+/* ---------- grupowanie i raporty ---------- */
+const cmpn=(a,b)=>a.localeCompare(b,"pl",{numeric:true});
+function groups(list){
+ const g={};
+ list.forEach(e=>{
+  const k=e.ord+"\u0001"+e.pos;const o=g[k]=g[k]||{ord:e.ord,pos:e.pos,rows:{}};
+  const rk=[e.el,e.rs,e.cut?1:0,e.src,(e.sz||"").toLowerCase().replace(/[\s×*]/g,"").replace(/,/g,".")].join("\u0001");
+  const r=o.rows[rk]=o.rows[rk]||{el:e.el,rs:e.rs,cut:e.cut,src:e.src,sz:e.sz||"",pn:0,qty:0};
+  r.qty+=e.qty;r.pn=Math.round((r.pn+(e.pn||0))*100)/100;
+ });
+ return Object.values(g).sort((a,b)=>cmpn(a.ord,b.ord)||cmpn(a.pos,b.pos)).map(x=>({
+  ord:x.ord,pos:x.pos,
+  rows:Object.values(x.rows).sort((a,b)=>ELS.indexOf(a.el)-ELS.indexOf(b.el)||a.rs.localeCompare(b.rs,"pl")||a.cut-b.cut)
+ }));
+}
+function need(g){
+ const m={};g.rows.forEach(r=>{if(!r.cut)m[r.el]=(m[r.el]||0)+r.qty});
+ const t=Object.values(m).reduce((a,b)=>a+b,0);
+ const d=ELS.filter(k=>m[k]).map(k=>k+" "+m[k]).join(" · ");
+ return `<div class="need${t?"":" done"}"><span>Do docinki</span><b>${t} szt.</b>${d?`<small>${esc(d)}</small>`:""}</div>`;
+}
+const heading=g=>g.pos?`Zamówienie ${esc(g.ord)} · poz. ${esc(g.pos)}`:`Zamówienie ${esc(g.ord)} · RICO`;
+const rowsHtml=g=>g.rows.map((r,i)=>`<div class="rw${i&&g.rows[i-1].el!==r.el?" sep":""}"><div><b>${esc(r.el)}</b><small>${esc(r.rs)}</small>${r.cut?`<small class="cut">Docinka wykonana: ${esc(r.src)}${r.sz?" "+esc(r.sz):""}${r.pn?" · paneli: "+fmt(r.pn):""}</small>`:""}</div><div class="q">${r.qty} szt.</div></div>`).join("");
+const grpHtml=(g,t)=>`<div class="card grp">${t?`<h3>${t}</h3>`:""}${rowsHtml(g)}${need(g)}</div>`;
+const exportBtn='<button class="add" id="exp" style="margin-top:6px">Eksportuj (CSV + wykres)</button><div class="msg" id="msg2"></div>';
+let curExport=null;
+
+function cards(){
+ const m={};
+ entries.forEach(e=>{const k=e.pos?e.ord+"/"+e.pos:"RICO";(m[k]=m[k]||{key:k,label:k,rico:!e.pos,list:[]}).list.push(e)});
+ return Object.values(m).sort((a,b)=>(b.rico-a.rico)||cmpn(a.list[0].ord,b.list[0].ord)||cmpn(a.list[0].pos,b.list[0].pos));
+}
+function renderPage(k){
+ if(k==="raport"){
+  const list=entries.filter(e=>e.d===today()),gs=groups(list),tot=list.reduce((s,e)=>s+e.qty,0);
+  curExport={list,label:"Raport dzienny",base:"raport_dzienny_"+today()};
+  return `<div class="date">${esc(new Date().toLocaleDateString("pl-PL",{weekday:"long",day:"numeric",month:"long",year:"numeric"}))}</div><div class="h">${list.length?"Razem: "+tot+" szt.":""}</div>`
+   +(gs.length?gs.map(g=>grpHtml(g,heading(g))).join(""):'<div class="empty">Brak wpisów z dzisiaj</div>')+(gs.length?exportBtn:"");
+ }
+ const c=cards().find(x=>x.key===k);if(!c)return "";
+ const gs=groups(c.list),tot=c.list.reduce((s,e)=>s+e.qty,0);
+ curExport={list:c.list,label:c.label,base:"karta_"+c.label.replace(/\//g,"_")};
+ return `<div class="date">${esc(c.label)}${c.rico?" (bez pozycji)":""}</div><div class="h">Wpisów: ${c.list.length} · razem ${tot} szt.</div>`
+  +gs.map(g=>grpHtml(g,c.rico?`Zamówienie ${esc(g.ord)}`:"")).join("")+exportBtn;
+}
+
+/* ---------- nawigacja: zakładki + przesuwanie ---------- */
+let cur="wpis";
+const pages=()=>[{k:"wpis",t:"Wpis"},{k:"raport",t:"Raport"}].concat(cards().map(c=>({k:c.key,t:c.label})));
+function buildTabs(ps){
+ ps=ps||pages();const t=$("tabs");t.innerHTML="";
+ ps.forEach(p=>{const b=document.createElement("button");b.textContent=p.t;b.className=p.k===cur?"on":"";b.onclick=()=>{const i=ps.findIndex(x=>x.k===cur),j=ps.findIndex(x=>x.k===p.k);go(p.k,j>i?1:-1)};t.appendChild(b);
+  if(p.k===cur)setTimeout(()=>{t.scrollLeft=b.offsetLeft-t.clientWidth/2+b.clientWidth/2},0)});
+}
+function go(k,dir){
+ const ps=pages();if(!ps.some(p=>p.k===k))k="wpis";
+ cur=k;buildTabs(ps);
+ const v=$("view");
+ if(k==="wpis"){$("p0").style.display="block";v.style.display="none"}
+ else{
+  $("p0").style.display="none";v.style.display="block";v.innerHTML=renderPage(k);v.scrollTop=0;
+  const x=$("exp");if(x)x.onclick=doExport;
+  v.classList.remove("al","ar");void v.offsetWidth;if(dir)v.classList.add(dir>0?"ar":"al");
+ }
+}
+let sx=0,sy=0;
+$("vp").addEventListener("touchstart",e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+$("vp").addEventListener("touchend",e=>{
+ const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+ if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5){
+  const ps=pages(),i=ps.findIndex(p=>p.k===cur),n=i+(dx<0?1:-1);
+  if(n>=0&&n<ps.length)go(ps[n].k,dx<0?1:-1);
+ }
+},{passive:true});
+
+/* ---------- eksport: CSV + wykres PNG ---------- */
+function toCsv(list,label){
+ const q=v=>'"'+String(v).replace(/"/g,'""')+'"';
+ const L=[["Karta","Data eksportu","Nr zamówienia","Nr pozycji","Element","Kod","Przyczyna","Ilość","Docinka","Docinka z","Rozmiar panela","Ilość paneli"]];
+ groups(list).forEach(g=>g.rows.forEach(r=>L.push([label,today(),g.ord,g.pos,r.el,r.rs.slice(0,3),r.rs.slice(6),r.qty,r.cut?"TAK":"NIE",r.src,r.sz,r.pn?fmt(r.pn):""])));
+ L.push([]);L.push(["Do docinki – podsumowanie"]);
+ ELS.forEach(el=>{const n=list.filter(e=>e.el===el&&!e.cut).reduce((s,e)=>s+e.qty,0);if(n)L.push(["","","","",el,"","",n])});
+ return L.map(l=>l.map(q).join(";")).join("\r\n");
+}
+function chartPng(list,label){
+ const m={};list.forEach(e=>{const c=e.rs.slice(0,3);m[c]=(m[c]||0)+e.qty});
+ const data=Object.entries(m).sort((a,b)=>b[1]-a[1]);
+ const desc={};RS.forEach(r=>desc[r.slice(0,3)]=r);
+ const W=900,top=90,ph=360,left=70,right=30,H=top+ph+60+data.length*26+30;
+ const cv=document.createElement("canvas");cv.width=W;cv.height=H;const c=cv.getContext("2d");
+ c.fillStyle="#fff";c.fillRect(0,0,W,H);
+ c.fillStyle="#111";c.font="bold 26px sans-serif";c.fillText("Przyczyny docinek – "+label,left,40);
+ c.font="16px sans-serif";c.fillStyle="#555";c.fillText("Liczba niezgodnych szt. według przyczyny · "+dd(today()),left,66);
+ const max=Math.max(1,...data.map(d=>d[1])),nm=Math.max(5,Math.ceil(max/5)*5);
+ c.strokeStyle="#ddd";c.fillStyle="#555";c.font="14px sans-serif";c.textAlign="right";
+ for(let i=0;i<=5;i++){const y=top+ph-ph*i/5;c.beginPath();c.moveTo(left,y);c.lineTo(W-right,y);c.stroke();c.fillText(String(Math.round(nm*i/5)),left-8,y+5)}
+ const bw=(W-left-right)/data.length,bwid=Math.min(80,bw*0.6);
+ data.forEach((d,i)=>{
+  const x=left+i*bw+(bw-bwid)/2,h=ph*d[1]/nm,y=top+ph-h;
+  c.fillStyle="#c2410c";c.fillRect(x,y,bwid,h);
+  c.textAlign="center";c.fillStyle="#111";c.font="bold 16px sans-serif";c.fillText(String(d[1]),x+bwid/2,y-6);
+  c.font="bold 17px sans-serif";c.fillText(d[0],x+bwid/2,top+ph+24);
+ });
+ c.textAlign="left";c.font="15px sans-serif";c.fillStyle="#333";
+ data.forEach((d,i)=>c.fillText(desc[d[0]]||d[0],left,top+ph+60+i*26));
+ return cv.toDataURL("image/png").split(",")[1];
+}
+function b64Blob(b){const s=atob(b),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return new Blob([u],{type:"image/png"})}
+async function doExport(){
+ if(!curExport||!curExport.list.length)return flash("msg2","Brak danych do eksportu");
+ const {list,label,base}=curExport;
+ const csv="\uFEFF"+toCsv(list,label),png=chartPng(list,label);
+ try{
+  if(window.Android&&Android.saveBoth){Android.saveBoth(base+".csv",csv,base+"_wykres.png",png)}
+  else{
+   const files=[[base+".csv",new Blob([csv],{type:"text/csv"})],[base+"_wykres.png",b64Blob(png)]];
+   const d=(typeof claude!=="undefined"&&claude.use)?await claude.use("downloads"):null;
+   if(d){for(const f of files)await d.save({filename:f[0],data:f[1]})}
+   else files.forEach(f=>{const a=document.createElement("a");a.href=URL.createObjectURL(f[1]);a.download=f[0];a.click()});
+  }
+  flash("msg2","Zapisano ✓");
+ }catch(e){if(!e||e.code!=="declined")flash("msg2","Nie udało się zapisać pliku")}
+}
+renderList();buildTabs();
+</script>
+</body>
+</html>
